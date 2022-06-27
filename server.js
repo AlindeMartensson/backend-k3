@@ -5,8 +5,6 @@ const io = new Server({
   },
 });
 
-let history = [];
-
 const rooms = {
   default: {
     name: "Default room",
@@ -14,13 +12,19 @@ const rooms = {
   },
 };
 
+//const date = new Date();
+
 io.on("connection", (socket) => {
   socket.on("chat message", (msg) => {
-    history.push({ id: socket.id, message: msg });
-    io.emit("chat message", history);
-    console.log("message: " + msg);
-    socket.join("default");
-    console.log(socket.rooms);
+    const joinedRooms = Array.from(socket.rooms);
+    const currentRoom = joinedRooms[1];
+
+    rooms[currentRoom].state.push({
+      id: socket.id,
+      date: new Date(),
+      message: msg,
+    });
+    io.to(currentRoom).emit("chat message", rooms[currentRoom].state);
   });
   socket.on("ready", () => {
     socket.join("default");
@@ -40,6 +44,7 @@ io.on("connection", (socket) => {
     socket.leave(roomToLeave);
 
     socket.join(room);
+    console.log(rooms);
     io.to(room).emit("updated_state", rooms[room].state);
     console.log(`${socket.id} joined room: ${room}`);
   });
@@ -52,3 +57,5 @@ io.listen(4000);
 console.log("listening on 4000");
 
 // Vilket rum? Gå ut ur rum. Gå med i nytt rum. Skicka meddelande från rätt rum
+
+//
