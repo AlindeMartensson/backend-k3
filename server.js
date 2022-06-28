@@ -7,7 +7,7 @@ const io = new Server({
 
 const rooms = {
   default: {
-    name: "Default room",
+    name: "default",
     state: [],
   },
 };
@@ -16,6 +16,9 @@ const rooms = {
 
 io.on("connection", (socket) => {
   socket.on("chat message", (msg) => {
+    if (msg === "") {
+      return;
+    }
     const joinedRooms = Array.from(socket.rooms);
     const currentRoom = joinedRooms[1];
 
@@ -23,6 +26,7 @@ io.on("connection", (socket) => {
       id: socket.id,
       date: new Date(),
       message: msg,
+      room: currentRoom,
     });
     io.to(currentRoom).emit("chat message", rooms[currentRoom].state);
   });
@@ -31,10 +35,15 @@ io.on("connection", (socket) => {
     socket.emit("initial_state", rooms["default"].state);
   });
   socket.on("create_room", (room) => {
-    rooms[room] = {
-      name: room,
-      state: [],
-    };
+    const roomExists = rooms.hasOwnProperty(room);
+    console.log(roomExists);
+    if (!roomExists) {
+      console.log("skapade rum");
+      rooms[room] = {
+        name: room,
+        state: [],
+      };
+    }
 
     console.log(rooms);
   });
@@ -44,9 +53,13 @@ io.on("connection", (socket) => {
     socket.leave(roomToLeave);
 
     socket.join(room);
-    console.log(rooms);
+    console.log(socket.rooms);
     io.to(room).emit("updated_state", rooms[room].state);
     console.log(`${socket.id} joined room: ${room}`);
+
+    socket.on("delete_room", (room) => {
+      console.log(rooms);
+    });
   });
   // Event: Gå med i rum
   //Event: Gå ur rum
