@@ -1,4 +1,5 @@
 const { Server } = require("socket.io");
+const model = require("./database.model.js");
 const io = new Server({
   cors: {
     origin: "*",
@@ -12,6 +13,22 @@ const rooms = {
   },
 };
 
+async function init() {
+  const allRooms = await model.getAllRooms();
+
+  for (let room in allRooms) {
+    rooms[room.name] = {
+      name: room.name,
+      state: await model.getAllMessages(room.name),
+    };
+  }
+}
+
+init();
+
+//model.getAllRooms();
+//model.getAllMessages();
+
 //const date = new Date();
 
 io.on("connection", (socket) => {
@@ -21,7 +38,12 @@ io.on("connection", (socket) => {
     }
     const joinedRooms = Array.from(socket.rooms);
     const currentRoom = joinedRooms[1];
-
+    model.addMessage({
+      userId: socket.id,
+      date: new Date(),
+      message: msg,
+      room: currentRoom,
+    });
     rooms[currentRoom].state.push({
       id: socket.id,
       date: new Date(),
@@ -38,6 +60,7 @@ io.on("connection", (socket) => {
     const roomExists = rooms.hasOwnProperty(room);
     console.log(roomExists);
     if (!roomExists) {
+      model.addRoom(room);
       console.log("skapade rum");
       rooms[room] = {
         name: room,
@@ -56,13 +79,12 @@ io.on("connection", (socket) => {
     console.log(socket.rooms);
     io.to(room).emit("updated_state", rooms[room].state);
     console.log(`${socket.id} joined room: ${room}`);
-
-    socket.on("delete_room", (room) => {
-      console.log(rooms);
-    });
   });
-  // Event: Gå med i rum
-  //Event: Gå ur rum
+  socket.on("delete_room", (room) => {
+    model.deleteRoom(room);
+    model.deleteMessages(room);
+    console.log(room);
+  });
 });
 
 io.listen(4000);

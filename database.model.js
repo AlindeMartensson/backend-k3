@@ -1,12 +1,13 @@
 //Get all messages, get all rooms, add message,
-//add room, all messages in room, delete room + messages
+//add room, delete room + messages
+//all messages in room
 
-const db = require("../database.js");
+const db = require("./database.js");
 
-function getAllMessaes() {
-  const sql = "SELECT * FROM messages";
+function getAllMessages(room) {
+  const sql = "SELECT * FROM messages WHERE room = ?";
   return new Promise((resolve, reject) => {
-    db.all(sql, (error, rows) => {
+    db.all(sql, room, (error, rows) => {
       if (error) {
         reject(error);
       }
@@ -27,12 +28,32 @@ function getAllRooms() {
   });
 }
 
-function addMessage(book) {
+function addMessage(message) {
   const sql =
-    "INSERT INTO messages (id, userId, date, message, room) VALUES (?, ?, ?, ?, ?)";
+    "INSERT INTO messages (userId, date, message, room) VALUES (?, ?, ?, ?)";
 
   return new Promise((resolve, reject) => {
-    db.run(sql, [book.title, book.author], (error) => {
+    db.run(
+      sql,
+      [message.userId, message.date, message.message, message.room],
+      (error) => {
+        if (error) {
+          console.error(error.message);
+
+          reject(error);
+        }
+
+        resolve("success");
+      }
+    );
+  });
+}
+
+function addRoom(room) {
+  const sql = "INSERT INTO rooms (room) VALUES (?)";
+
+  return new Promise((resolve, reject) => {
+    db.run(sql, [room], (error) => {
       if (error) {
         console.error(error.message);
 
@@ -44,11 +65,11 @@ function addMessage(book) {
   });
 }
 
-function deleteRoom(id) {
-  const sql = "DELETE FROM rooms WHERE id = ?";
+function deleteRoom(room) {
+  const sql = "DELETE FROM rooms WHERE room = ?";
 
   return new Promise((resolve, reject) => {
-    db.run(sql, id, function (error) {
+    db.run(sql, room, function (error) {
       if (error) {
         console.log(error.message);
         reject(error);
@@ -58,3 +79,27 @@ function deleteRoom(id) {
     });
   });
 }
+
+function deleteMessages(room) {
+  const sql = "DELETE FROM messages WHERE room = ?";
+
+  return new Promise((resolve, reject) => {
+    db.run(sql, room, function (error) {
+      if (error) {
+        console.log(error.message);
+        reject(error);
+      }
+
+      resolve("success");
+    });
+  });
+}
+
+module.exports = {
+  getAllMessages,
+  getAllRooms,
+  addMessage,
+  addRoom,
+  deleteRoom,
+  deleteMessages,
+};
