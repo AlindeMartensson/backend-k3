@@ -1,4 +1,5 @@
 const { Server } = require("socket.io");
+const fs = require("fs");
 const model = require("./database.model.js");
 const io = new Server({
   cors: {
@@ -85,6 +86,21 @@ io.on("connection", (socket) => {
     model.deleteMessages(room);
     console.log(room);
   });
+
+  /*
+  socket.use(([event, ...args], next) => {
+    console.log(model.getAllMessages);
+    //model.getAllMessages();
+    const content = "hallå";
+    fs.writeFile("./log.txt", content, { flag: "a+" }, (err) => {
+      if (err) {
+        console.error(err);
+      }
+    });
+
+    next();
+  });
+  */
 });
 
 io.listen(4000);
