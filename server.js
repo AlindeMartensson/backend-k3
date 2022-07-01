@@ -75,6 +75,7 @@ io.on("connection", (socket) => {
     const joinedRooms = Array.from(socket.rooms);
     const roomToLeave = joinedRooms[1];
     socket.leave(roomToLeave);
+    socket.room = room;
 
     socket.join(room);
     console.log(socket.rooms);
@@ -87,26 +88,30 @@ io.on("connection", (socket) => {
     console.log(room);
   });
 
-  /*
   socket.use(([event, ...args], next) => {
-    console.log(model.getAllMessages);
-    //model.getAllMessages();
-    const content = "hallå";
-    fs.writeFile("./log.txt", content, { flag: "a+" }, (err) => {
-      if (err) {
-        console.error(err);
-      }
-    });
+    if (event === "chat message") {
+      const logMessage = {
+        id: socket.id,
+        room: socket.room,
+        date: new Date(),
+      };
+
+      fs.writeFile(
+        "./log.txt",
+        JSON.stringify(logMessage),
+        { flag: "a+" },
+        (err) => {
+          if (err) {
+            console.error(err);
+          }
+        }
+      );
+    }
 
     next();
   });
-  */
 });
 
 io.listen(4000);
 
 console.log("listening on 4000");
-
-// Vilket rum? Gå ut ur rum. Gå med i nytt rum. Skicka meddelande från rätt rum
-
-//
