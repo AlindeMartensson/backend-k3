@@ -1,6 +1,9 @@
 const { Server } = require("socket.io");
 const fs = require("fs");
 const model = require("./database.model.js");
+
+const PORT = process.env.PORT || 4000;
+
 const io = new Server({
   cors: {
     origin: "*",
@@ -112,6 +115,6 @@ io.on("connection", (socket) => {
   });
 });
 
-io.listen(4000);
-
-console.log("listening on 4000");
+io.listen(PORT, () => {
+  console.log(`haha yes, the server is running on port ${PORT}`);
+});

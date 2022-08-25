@@ -1,38 +1,41 @@
-const sqlite3 = require("sqlite3").verbose();
+const { Client } = require("pg");
 
-const db = new sqlite3.Database("./db.sqlite", (error) => {
-  if (error) {
-    console.log("Error");
-  }
+const db = new Client({
+  ssl: {
+    rejectUnauthorized: false,
+  },
+  connectionString: process.env.DATABASE_URL,
+});
 
-  const logMessages = `
+db.connect();
+
+const logMessages = `
     CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         userId TEXT,
         date TEXT,
         message TEXT,
         room TEXT
     ) `;
 
-  const logRooms = `
+const logRooms = `
     CREATE TABLE IF NOT EXISTS rooms (
         room TEXT,
-        id INTEGER PRIMARY KEY AUTOINCREMENT
+        id SERIAL PRIMARY KEY
     ) `;
 
-  db.run(logMessages, (error) => {
-    if (error) {
-      console.log(error);
-    } else {
-    }
-  });
+db.query(logMessages, (error) => {
+  if (error) {
+    console.log(error);
+  } else {
+  }
+});
 
-  db.run(logRooms, (error) => {
-    if (error) {
-      console.log(error);
-    } else {
-    }
-  });
+db.query(logRooms, (error) => {
+  if (error) {
+    console.log(error);
+  } else {
+  }
 });
 
 module.exports = db;
